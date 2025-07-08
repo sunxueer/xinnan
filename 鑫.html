@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摩斯密码表白器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5E87',
+                        secondary: '#FFD1DC',
+                        accent: '#FF9BB3',
+                        light: '#FFF9FB',
+                        dark: '#4A4A4A',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .heart-pulse {
+                animation: pulse 1s infinite;
+            }
+            .float {
+                animation: float 3s ease-in-out infinite;
+            }
+            .love-letter {
+                text-shadow: 0 2px 4px rgba(255, 94, 135, 0.1);
+            }
+            .bg-gradient-love {
+                background: linear-gradient(135deg, #FFF9FB 0%, #FFD1DC 100%);
+            }
+            .text-shadow {
+                text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            .heart-beat {
+                animation: heartBeat 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+            }
+            .scale-hover {
+                transition: transform 0.3s ease;
+            }
+            .scale-hover:hover {
+                transform: scale(1.05);
+            }
+            .input-focus {
+                transition: all 0.3s ease;
+            }
+            .input-focus:focus {
+                box-shadow: 0 0 0 4px rgba(255, 94, 135, 0.2);
+            }
+        }
+        
+        /* 爱心闪烁动画 */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        
+        /* 爱心漂浮动画 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        /* 心跳动画 */
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.1); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.1); }
+            70% { transform: scale(1); }
+        }
+        
+        /* 爱心爆炸动画 */
+        @keyframes explode {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        /* 爱心飘落动画 */
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-love min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
+    <!-- 背景装饰爱心 -->
+    <div id="bg-hearts" class="fixed inset-0 pointer-events-none z-0"></div>
+    
+    <!-- 主要内容区 -->
+    <div id="main-container" class="relative z-10 text-center max-w-md w-full bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl transition-all duration-500 transform hover:shadow-2xl">
+        <!-- 装饰元素 -->
+        <div class="absolute -top-6 -right-6 text-accent/30 text-4xl">
+            <i class="fa fa-heart"></i>
+        </div>
+        <div class="absolute -bottom-6 -left-6 text-accent/30 text-4xl">
+            <i class="fa fa-heart"></i>
+        </div>
+        
+        <!-- 标题 -->
+        <h1 class="text-[clamp(1.5rem,5vw,2.5rem)] font-bold text-primary mb-2 love-letter">摩斯密码</h1>
+        <p class="text-gray-500 mb-8">一个关于爱的秘密</p>
+        
+        <!-- 提示信息 -->
+        <p class="text-gray-600 mb-8 text-lg love-letter animate-fade-in">
+            这个爱心在传递一个秘密<br>
+            你能破译它的含义吗？
+        </p>
+        
+        <!-- 输入框 -->
+        <div class="mb-8">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="code-input" 
+                    placeholder="输入你的答案..." 
+                    class="w-full px-5 py-4 rounded-full border-2 border-secondary focus:border-primary outline-none transition-all text-gray-700 input-focus"
+                >
+                <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
+                    提示：三个汉字
+                </div>
+            </div>
+            <button 
+                id="submit-btn" 
+                class="mt-8 w-full bg-primary text-white px-8 py-4 rounded-full hover:bg-primary/90 transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-lg shadow-primary/20 text-lg font-medium"
+            >
+                破译密码
+            </button>
+        </div>
+        
+        <!-- 大爱心 -->
+        <div class="my-10 flex justify-center">
+            <div id="big-heart" class="text-primary text-[clamp(8rem,30vw,12rem)] transition-all duration-300 heart-beat">
+                <i class="fa fa-heart"></i>
+            </div>
+        </div>
+        
+        <!-- 重新开始按钮 (默认隐藏) -->
+        <button 
+            id="restart-btn" 
+            class="hidden mt-8 w-full bg-white border-2 border-secondary text-primary px-8 py-4 rounded-full hover:bg-secondary/20 transition-all transform hover:scale-105 focus:outline-none"
+        >
+            再来一次
+        </button>
+    </div>
+    
+    <!-- 成功信息 (默认隐藏) -->
+    <div id="success-message" class="hidden fixed inset-0 flex flex-col items-center justify-center bg-gradient-love z-20 p-4">
+        <!-- 装饰爱心 -->
+        <div id="celebration-hearts" class="fixed inset-0 pointer-events-none z-0"></div>
+        
+        <div class="relative z-10 bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl max-w-md w-full text-center">
+            <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 text-primary text-5xl">
+                <i class="fa fa-heart heart-beat"></i>
+            </div>
+            
+            <h2 class="text-primary text-[clamp(2rem,8vw,3rem)] font-bold mb-6 love-letter text-shadow">
+                我也爱你
+            </h2>
+            
+            <p class="text-gray-600 mb-8 text-lg">
+                恭喜你破译了爱的密码<br>
+                这是我们之间的秘密
+            </p>
+            
+            <button 
+                id="success-restart-btn" 
+                class="bg-primary text-white px-8 py-4 rounded-full hover:bg-primary/90 transition-all transform hover:scale-105 focus:outline-none shadow-lg shadow-primary/20 text-lg font-medium w-full"
+            >
+                再来一次
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // "我爱你"的摩斯密码
+        // 我: .-.. --- ...- .
+        // 爱: .- .. .--.
+        // 你: -.-- --- ..-
+        // 字符之间用空格分隔，单词之间用斜杠分隔
+        const loveCode = ".-.. --- ...- . / .- .. .--. / -.-- --- ..-";
+        
+        // 分解成闪烁模式：1=亮，0=暗，数字表示持续时间（单位：毫秒）
+        const flashPattern = [
+            // 我: .-.. --- ...- .
+            1, 200, 0, 200,    // .
+            1, 400, 0, 200,    // -
+            1, 200, 0, 200,    // .
+            1, 200, 0, 400,    // .
+            0, 600,            // 字符间隔
+            1, 400, 0, 200,    // -
+            1, 400, 0, 200,    // -
+            1, 400, 0, 400,    // -
+            0, 600,            // 字符间隔
+            1, 200, 0, 200,    // .
+            1, 200, 0, 200,    // .
+            1, 200, 0, 200,    // .
+            1, 400, 0, 400,    // -
+            0, 600,            // 字符间隔
+            1, 200, 0, 800,    // . (单词间隔)
+            // 爱: .- .. .--.
+            1, 200, 0, 200,    // .
+            1, 400, 0, 400,    // -
+            0, 600,            // 字符间隔
+            1, 200, 0, 200,    // .
+            1, 200, 0, 400,    // .
+            0, 600,            // 字符间隔
+            1, 200, 0, 200,    // .
+            1, 400, 0, 200,    // -
+            1, 400, 0, 200,    // -
+            1, 200, 0, 800,    // . (单词间隔)
+            // 你: -.-- --- ..-
+            1, 400, 0, 200,    // -
+            1, 200, 0, 200,    // .
+            1, 400, 0, 200,    // -
+            1, 400, 0, 400,    // -
+            0, 600,            // 字符间隔
+            1, 400, 0, 200,    // -
+            1, 400, 0, 200,    // -
+            1, 400, 0, 400,    // -
+            0, 600,            // 字符间隔
+            1, 200, 0, 200,    // .
+            1, 200, 0, 200,    // .
+            1, 400, 0, 1500    // - (结束后暂停 longer)
+        ];
+        
+        // 获取DOM元素
+        const bigHeart = document.getElementById('big-heart');
+        const codeInput = document.getElementById('code-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const successMessage = document.getElementById('success-message');
+        const successRestartBtn = document.getElementById('success-restart-btn');
+        const mainContainer = document.getElementById('main-container');
+        const bgHearts = document.getElementById('bg-hearts');
+        const celebrationHearts = document.getElementById('celebration-hearts');
+        
+        // 创建背景装饰爱心
+        function createBgHearts() {
+            for (let i = 0; i < 10; i++) {
+                const heart = document.createElement('div');
+                heart.innerHTML = '<i class="fa fa-heart"></i>';
+                heart.className = 'absolute text-accent/20';
+                heart.style.fontSize = `${Math.random() * 30 + 10}px`;
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.top = `${Math.random() * 100}%`;
+                heart.style.transform = `rotate(${Math.random() * 360}deg)`;
+                heart.style.animation = `float ${Math.random() * 10 + 10}s linear infinite`;
+                heart.style.animationDelay = `${Math.random() * 5}s`;
+                bgHearts.appendChild(heart);
+            }
+        }
+        
+        // 当前闪烁步骤
+        let currentStep = 0;
+        let flashInterval;
+        
+        // 开始爱心闪烁动画
+        function startFlashing() {
+            // 重置步骤
+            currentStep = 0;
+            
+            // 清除任何现有的间隔
+            if (flashInterval) clearInterval(flashInterval);
+            
+            // 执行闪烁模式
+            function executeStep() {
+                if (currentStep >= flashPattern.length) {
+                    // 模式完成，重新开始
+                    currentStep = 0;
+                }
+                
+                // 提取当前步骤的状态和持续时间
+                const isOn = flashPattern[currentStep] === 1;
+                const duration = flashPattern[currentStep + 1];
+                
+                // 设置爱心可见性和大小
+                if (isOn) {
+                    bigHeart.style.opacity = '1';
+                    bigHeart.style.transform = 'scale(1.05)';
+                } else {
+                    bigHeart.style.opacity = '0.3';
+                    bigHeart.style.transform = 'scale(1)';
+                }
+                
+                // 移动到下一步
+                currentStep += 2;
+                
+                // 设置下一个步骤
+                flashInterval = setTimeout(executeStep, duration);
+            }
+            
+            // 开始执行
+            executeStep();
+        }
+        
+        // 停止闪烁
+        function stopFlashing() {
+            if (flashInterval) {
+                clearTimeout(flashInterval);
+                flashInterval = null;
+                bigHeart.style.opacity = '1';
+                bigHeart.style.transform = 'scale(1.1)';
+            }
+        }
+        
+        // 检查答案是否正确
+        function checkAnswer() {
+            const userInput = codeInput.value.trim().toLowerCase();
+            if (userInput === '我爱你' || userInput === 'woaini') {
+                // 答案正确
+                stopFlashing();
+                showSuccess();
+            } else {
+                // 答案错误，抖动输入框
+                codeInput.classList.add('border-red-400');
+                codeInput.classList.add('animate-shake');
+                setTimeout(() => {
+                    codeInput.classList.remove('border-red-400');
+                    codeInput.classList.remove('animate-shake');
+                }, 500);
+                
+                // 清空输入框
+                setTimeout(() => {
+                    codeInput.value = '';
+                }, 500);
+            }
+        }
+        
+        // 显示成功消息并创建爱心弹幕
+        function showSuccess() {
+            // 显示成功消息
+            successMessage.classList.remove('hidden');
+            
+            // 创建庆祝爱心
+            createCelebrationHearts();
+            
+            // 隐藏主容器
+            setTimeout(() => {
+                mainContainer.style.opacity = '0';
+                mainContainer.style.transform = 'scale(0.9)';
+            }, 500);
+            
+            // 显示重新开始按钮
+            setTimeout(() => {
+                restartBtn.classList.remove('hidden');
+                restartBtn.style.opacity = '0';
+                restartBtn.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    restartBtn.style.opacity = '1';
+                    restartBtn.style.transform = 'translateY(0)';
+                }, 100);
+            }, 1500);
+        }
+        
+        // 创建庆祝爱心弹幕
+        function createCelebrationHearts() {
+            const count = 100; // 爱心数量
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.innerHTML = '<i class="fa fa-heart"></i>';
+                    heart.className = 'absolute text-primary';
+                    heart.style.fontSize = `${Math.random() * 30 + 10}px`;
+                    heart.style.left = `${Math.random() * 100}%`;
+                    heart.style.top = '100%';
+                    heart.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    heart.style.animation = `fall ${Math.random() * 5 + 3}s linear forwards`;
+                    heart.style.opacity = Math.random() * 0.8 + 0.2;
+                    celebrationHearts.appendChild(heart);
+                    
+                    // 一段时间后移除爱心
+                    setTimeout(() => {
+                        if (heart.parentNode === celebrationHearts) {
+                            celebrationHearts.removeChild(heart);
+                        }
+                    }, 8000);
+                }, i * 50);
+            }
+        }
+        
+        // 重置游戏
+        function resetGame() {
+            codeInput.value = '';
+            successMessage.classList.add('hidden');
+            mainContainer.style.opacity = '1';
+            mainContainer.style.transform = 'scale(1)';
+            restartBtn.classList.add('hidden');
+            
+            // 移除所有庆祝爱心元素
+            while (celebrationHearts.firstChild) {
+                celebrationHearts.removeChild(celebrationHearts.firstChild);
+            }
+            
+            // 重新开始闪烁
+            startFlashing();
+        }
+        
+        // 事件监听
+        submitBtn.addEventListener('click', checkAnswer);
+        
+        // 按回车键提交
+        codeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+        
+        // 重新开始按钮
+        restartBtn.addEventListener('click', resetGame);
+        successRestartBtn.addEventListener('click', resetGame);
+        
+        // 初始化页面
+        window.addEventListener('load', () => {
+            createBgHearts();
+            startFlashing();
+            
+            // 添加焦点动画
+            codeInput.addEventListener('focus', () => {
+                codeInput.classList.add('border-primary');
+            });
+            
+            codeInput.addEventListener('blur', () => {
+                if (!codeInput.value) {
+                    codeInput.classList.remove('border-primary');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+    
